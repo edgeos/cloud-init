@@ -1,6 +1,7 @@
 [Unit]
 Description=Apply the settings specified in cloud-config
-After=network-online.target cloud-config.target
+After=network-online.target cloud-config.target etc-ssh.mount etc-network-interfaces.d.mount home-root-.ssh.mount
+Requires=etc-ssh.mount etc-network-interfaces.d.mount home-root-.ssh.mount
 Wants=network-online.target cloud-config.target
 
 [Service]

@@ -1,0 +1,55 @@
+--- a/systemd/cloud-config.service	2016-12-23 08:37:45.000000000 -0800
++++ b/systemd/cloud-config.service	2017-06-27 13:59:52.858159112 -0700
+@@ -1,6 +1,7 @@
+ [Unit]
+ Description=Apply the settings specified in cloud-config
+-After=network-online.target cloud-config.target
++After=network-online.target cloud-config.target etc-ssh.mount etc-network-interfaces.d.mount home-root-.ssh.mount
++Requires=etc-ssh.mount etc-network-interfaces.d.mount home-root-.ssh.mount
+ Wants=network-online.target cloud-config.target
+ 
+ [Service]
+--- a/systemd/cloud-final.service	2016-12-23 08:37:45.000000000 -0800
++++ b/systemd/cloud-final.service	2017-06-27 13:15:59.886159112 -0700
+@@ -1,6 +1,7 @@
+ [Unit]
+ Description=Execute cloud user/final scripts
+-After=network-online.target cloud-config.service rc-local.service multi-user.target
++After=network-online.target cloud-config.service rc-local.service multi-user.target etc-ssh.mount etc-network-interfaces.d.mount home-root-.ssh.mount
++Requires=etc-ssh.mount etc-network-interfaces.d.mount home-root-.ssh.mount
+ Wants=network-online.target cloud-config.service
+ 
+ [Service]
+--- a/systemd/cloud-init-local.service	2016-12-23 08:37:45.000000000 -0800
++++ b/systemd/cloud-init-local.service	2017-06-27 13:15:59.886159112 -0700
+@@ -2,7 +2,8 @@
+ Description=Initial cloud-init job (pre-networking)
+ DefaultDependencies=no
+ Wants=network-pre.target
+-After=systemd-remount-fs.service
++After=systemd-remount-fs.service etc-ssh.mount etc-network-interfaces.d.mount home-root-.ssh.mount
++Requires=etc-ssh.mount etc-network-interfaces.d.mount home-root-.ssh.mount
+ Before=NetworkManager.service
+ Before=network-pre.target
+ Before=shutdown.target
+--- a/systemd/cloud-init.service	2016-12-23 08:37:45.000000000 -0800
++++ b/systemd/cloud-init.service	2017-06-27 13:59:37.238159112 -0700
+@@ -4,12 +4,12 @@
+ Wants=cloud-init-local.service
+ Wants=sshd-keygen.service
+ Wants=sshd.service
+-After=cloud-init-local.service
+-After=networking.service
+-Before=network-online.target
+-Before=sshd-keygen.service
+-Before=sshd.service
+-Before=sysinit.target
++After=cloud-init-local.service network-online.target etc-ssh.mount etc-network-interfaces.d.mount home-root-.ssh.mount home-dockeruser-.bashrc.mount
++Requires=etc-ssh.mount etc-network-interfaces.d.mount home-root-.ssh.mount home-dockeruser-.bashrc.mount
++#Before=network-online.target
++Before=dropbearkey.service
++Before=dropbear@.service
++#Before=sysinit.target
+ Before=systemd-user-sessions.service
+ Conflicts=shutdown.target
+ 

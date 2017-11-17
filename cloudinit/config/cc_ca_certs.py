@@ -38,7 +38,7 @@ import os
 
 from cloudinit import util
 
-CA_CERT_PATH = "/usr/share/ca-certificates/"
+CA_CERT_PATH = "/usr/local/share/ca-certificates/"
 CA_CERT_FILENAME = "cloud-init-ca-certs.crt"
 CA_CERT_CONFIG = "/etc/ca-certificates.conf"
 CA_CERT_SYSTEM_PATH = "/etc/ssl/certs/"

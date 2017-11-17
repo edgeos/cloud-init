@@ -1,6 +1,7 @@
 [Unit]
 Description=Execute cloud user/final scripts
-After=network-online.target cloud-config.service rc-local.service multi-user.target
+After=network-online.target cloud-config.service rc-local.service multi-user.target etc-ssh.mount etc-network-interfaces.d.mount home-root-.ssh.mount
+Requires=etc-ssh.mount etc-network-interfaces.d.mount home-root-.ssh.mount
 Wants=network-online.target cloud-config.service
 
 [Service]

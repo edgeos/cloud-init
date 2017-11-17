@@ -93,6 +93,9 @@ class DataSourceNoCloud(sources.DataSource):
 
             label_list = util.find_devs_with("LABEL=%s" % label)
             devlist = list(set(fslist) & set(label_list))
+
+            devlist.extend(util.find_devs_with_lsblk())
+
             devlist.sort(reverse=True)
 
             for dev in devlist:

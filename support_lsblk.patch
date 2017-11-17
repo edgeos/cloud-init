@@ -1,0 +1,59 @@
+--- a/cloudinit/config/cc_ca_certs.py	2016-12-23 08:37:45.000000000 -0800
++++ b/cloudinit/config/cc_ca_certs.py	2017-07-10 10:10:37.224522633 -0700
+@@ -38,7 +38,7 @@
+ 
+ from cloudinit import util
+ 
+-CA_CERT_PATH = "/usr/share/ca-certificates/"
++CA_CERT_PATH = "/usr/local/share/ca-certificates/"
+ CA_CERT_FILENAME = "cloud-init-ca-certs.crt"
+ CA_CERT_CONFIG = "/etc/ca-certificates.conf"
+ CA_CERT_SYSTEM_PATH = "/etc/ssl/certs/"
+--- a/cloudinit/sources/DataSourceNoCloud.py	2016-12-23 08:37:45.000000000 -0800
++++ b/cloudinit/sources/DataSourceNoCloud.py	2017-06-20 11:16:19.424929000 -0700
+@@ -93,6 +93,9 @@
+ 
+             label_list = util.find_devs_with("LABEL=%s" % label)
+             devlist = list(set(fslist) & set(label_list))
++
++            devlist.extend(util.find_devs_with_lsblk())
++
+             devlist.sort(reverse=True)
+ 
+             for dev in devlist:
+--- a/cloudinit/util.py	2016-12-23 08:37:45.000000000 -0800
++++ b/cloudinit/util.py	2017-06-28 10:14:04.545741100 -0700
+@@ -1203,6 +1203,33 @@
+         os.dup2(fp.fileno(), sys.stdin.fileno())
+ 
+ 
++def find_devs_with_lsblk():
++    cmd = ['/usr/bin/lsblk', '-p', '-oNAME,LABEL']
++    LOG.debug("find_devs_with_lsblk %s", cmd)
++
++    try:
++        (out, _err) = subp(cmd)
++    except ProcessExecutionError as e:
++        if e.errno == errno.ENOENT:
++            # lsblk not found...
++            out = ""
++        else:
++            raise
++    entries = []
++    for line in out.splitlines():                       
++        line = line.strip()                             
++        if line:                                        
++            items = []                                  
++            items = line.split()                        
++            if len(items) == 2:                         
++                # user data drive has label cidata
++                if items[1] == "cidata":    
++                    entries.append(items[0]) 
++                    LOG.debug("drive: %s", line.split()[0])
++
++    return entries
++
++
+ def find_devs_with(criteria=None, oformat='device',
+                    tag=None, no_cache=False, path=None):
+     """

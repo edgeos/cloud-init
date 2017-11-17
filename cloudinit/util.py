@@ -1203,6 +1203,33 @@ def close_stdin():
         os.dup2(fp.fileno(), sys.stdin.fileno())
 
 
+def find_devs_with_lsblk():
+    cmd = ['/usr/bin/lsblk', '-p', '-oNAME,LABEL']
+    LOG.debug("find_devs_with_lsblk %s", cmd)
+
+    try:
+        (out, _err) = subp(cmd)
+    except ProcessExecutionError as e:
+        if e.errno == errno.ENOENT:
+            # lsblk not found...
+            out = ""
+        else:
+            raise
+    entries = []
+    for line in out.splitlines():                       
+        line = line.strip()                             
+        if line:                                        
+            items = []                                  
+            items = line.split()                        
+            if len(items) == 2:                         
+                # user data drive has label cidata
+                if items[1] == "cidata":    
+                    entries.append(items[0]) 
+                    LOG.debug("drive: %s", line.split()[0])
+
+    return entries
+
+
 def find_devs_with(criteria=None, oformat='device',
                    tag=None, no_cache=False, path=None):
     """
